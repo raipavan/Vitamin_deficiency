@@ -30,12 +30,11 @@ classes = [
 
 # Define additional information for predictions
 temp = {
-    classes[0]: [' Vitamin D synthesis is triggered by sunlight, and adequate levels support overall skin health. While a deficiency doesn’t cause light diseases directly, proper vitamin D levels are crucial for maintaining skin integrity and managing light sensitivity.  Vitamin B12: Vitamin B12 deficiency can lead to hyperpigmentation and other skin changes. Proper levels of vitamin B12 are important for overall skin health and preventing pigmentary changes.'],
-
-    classes[1]: ['Vitamin D**: A deficiency in vitamin D can lead to inflammation, which may exacerbate acne. Vitamin D has anti-inflammatory properties, and low levels are associated with increased skin inflammation.Vitamin A**: Vitamin A plays a critical role in skin health. A deficiency may lead to excessive sebum production, clogged pores, and the formation of acne.Zinc (a mineral)**: Zinc deficiency is also linked to acne. Zinc helps with wound healing, reduces inflammation, and limits the growth of acne-causing bacteria.'],
-    classes[2]: ['**Vitamin D**: Poison ivy reactions involve immune responses that can be affected by vitamin D levels. Vitamin D modulates the immune system, helping reduce inflammation caused by contact dermatitis. **Vitamin C**: Vitamin C supports collagen synthesis and accelerates wound healing, aiding in recovery from skin reactions like poison ivy. **Vitamin E**: Vitamin E has antioxidant properties that help protect the skin and may reduce damage caused by exposure to allergens like poison ivy. **Zinc**: Zinc can reduce inflammation and promote healing of skin rashes caused by contact dermatitis. Zinc creams or supplements may alleviate symptoms.'],
-    classes[3]: ['1. **Vitamin B2 (Riboflavin) - Deficiency in riboflavin can lead to seborrheic dermatitis, particularly around the nose, eyes, and ears. Riboflavin is essential for maintaining healthy skin, and a lack of it may cause redness, inflammation, and flaky skin. **Vitamin B3 (Niacin)**: - Niacin deficiency can cause a condition known as **pellagra**, which includes dermatitis as one of its primary symptoms. Pellagra results in inflamed, scaly, and thickened skin, especially in areas exposed to sunlight. **Vitamin B7 (Biotin)**:Biotin deficiency is linked to seborrheic dermatitis. Biotin is important for skin health, and low levels may lead to dry, flaky skin.**Vitamin C**: A deficiency in vitamin C can result in weakened skin structure due to poor collagen production, which may contribute to dermatitis and other skin problems.*Vitamin D**: Low levels of vitamin D have been associated with an increased risk of atopic dermatitis (eczema). Vitamin D helps regulate the immune system and inflammatory responses in the skin.'],
-    classes[4]: ['**Vitamin B12**:**Role**: Vitamin B12 is important for red blood cell production and maintaining healthy hair follicles. Deficiency can lead to hair loss due to impaired cell metabolism and reduced oxygen delivery to hair follicles.**Source**: Katta, R., & Desai, S. (2013). Vitamin Deficiencies and Hair Loss: A Review. *Dermatologic Therapy*, 26(5), 322-330.**Biotin (Vitamin B7)**: **Role**: Biotin is often associated with healthy hair growth. A deficiency can cause hair thinning and loss, as it plays a role in the synthesis of keratin, a protein important for hair structure.**Source**: Zempleni, J., & Rucker, R. B. (2005). Biotin. In: *Present Knowledge in Nutrition*, 10th edition, pp. 354-364.**Vitamin A**:**Role**: Vitamin A supports the health of skin cells, including those in the scalp. Both deficiency and excess can cause hair loss. Deficiency leads to dry and brittle hair, while excess can lead to toxicity and hair loss.**Vitamin E**:**Role**: Vitamin E has antioxidant properties that help protect hair follicles from oxidative stress. A deficiency may contribute to hair loss, although its role is less direct compared to other vitamins.'],
+    classes[0]: ['Vitamin D', 'Vitamin B12'],
+    classes[1]: ['Vitamin D', 'Vitamin A', 'Zinc'],
+    classes[2]: ['Vitamin D', 'Vitamin C', 'Vitamin E', 'Zinc'],
+    classes[3]: ['Vitamin B2', 'Vitamin B3', 'Vitamin B7', 'Vitamin C', 'Vitamin D'],
+    classes[4]: ['Vitamin B12', 'Biotin', 'Vitamin A', 'Vitamin E'],
 }
 
 # Define the transformation pipeline
@@ -45,7 +44,7 @@ transform = transforms.Compose([
 ])
 
 # Streamlit app
-st.title("Skin Disease Classifier")
+st.title("Vitamin Deficiency Detection")
 
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
@@ -66,11 +65,13 @@ if uploaded_file is not None:
             output = model(input_tensor)
             _, predicted_idx = torch.max(output, 1)
 
-        # Debug: Print output logits and predicted index
-        # st.write(f"Model output logits: {output}")
-        # st.write(f"Predicted index: {predicted_idx.item()}")
-
         # Map prediction to class
         predicted_class = classes[predicted_idx.item()]
-        st.write(f"Prediction: {predicted_class}")
-        st.write(f"Vitamin Info: {temp[predicted_class]}")
+        
+        # Retrieve relevant deficiencies (up to 2) or show "No deficiency"
+        deficiencies = temp.get(predicted_class, [])
+        if deficiencies:
+            st.write(f"Prediction: {predicted_class}")
+            st.write("Deficiencies Detected: " + ", ".join(deficiencies[:2]))
+        else:
+            st.write("Prediction: No deficiency detected")
